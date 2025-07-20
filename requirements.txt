@@ -1,0 +1,24 @@
+# Core dependencies
+numpy>=1.19.0
+matplotlib>=3.3.0
+opencv-python>=4.5.0
+Pillow>=8.0.0  # For image processing
+
+# PyTorch with CUDA support - choose appropriate version based on your CUDA installation
+# For CUDA 11.8
+torch>=2.0.0+cu118
+torchvision>=0.15.0+cu118
+torchaudio>=2.0.0+cu118
+
+# For CUDA 12.1 (newer version)
+# torch>=2.1.0+cu121
+# torchvision>=0.16.0+cu121
+# torchaudio>=2.1.0+cu121
+
+# For CPU-only (fallback)
+# torch>=2.0.0
+# torchvision>=0.15.0
+# torchaudio>=2.0.0
+
+# Testing
+pytest>=7.0.0
