@@ -256,44 +256,64 @@ class VideoEnhancer:
         return enhanced, stats
 
     def create_overlay(self, enhanced_frame, stats):
-        """Create an informational overlay on the enhanced frame"""
+        """Create an informational overlay on the enhanced frame, including wireframe stats if present."""
         if enhanced_frame is None or stats is None:
             return enhanced_frame
 
         enhanced_copy = enhanced_frame.copy()
 
-        # Font settings for display
-        font = cv2.FONT_HERSHEY_PLAIN
-        font_scale = 1.2
-        font_thickness = 2
+        # Font settings for display (smaller font)
+        font = cv2.FONT_HERSHEY_DUPLEX
+        font_scale = 0.7
+        font_thickness = 1
         font_color = (255, 255, 255)
 
-        # Prepare information text
+        # Prepare enhancement information text
         info_text = [
-            f"Frame: {stats['frame_count']}",
-            f"Original Brightness: {stats['original_brightness']:.1f}/255",
-            f"Enhanced Brightness: {stats['enhanced_brightness']:.1f}/255",
-            f"Boost: {stats['boost_factor']:.2f}x",
-            f"Process FPS: {stats['process_fps']:.1f}",
-            f"Display FPS: {stats['display_fps']:.1f}",
-            f"Mode: {stats['mode']}",
-            f"Processing: {stats['processing']}"
+            f"Frame: {stats.get('frame_count', 0)}",
+            f"Original Brightness: {stats.get('original_brightness', 0):.1f}/255",
+            f"Enhanced Brightness: {stats.get('enhanced_brightness', 0):.1f}/255",
+            f"Boost: {stats.get('boost_factor', 0):.2f}x",
+            f"Process FPS: {stats.get('process_fps', 0):.1f}",
+            f"Display FPS: {stats.get('display_fps', 0):.1f}",
+            f"Mode: {stats.get('mode', '')}",
+            f"Processing: {stats.get('processing', '')}",
         ]
 
-        # Create a semi-transparent overlay for better text readability
+        # Prepare wireframe information text if available
+        wireframe_text = []
+        if "humans_detected" in stats:
+            wireframe_text.append(f"Humans detected: {stats['humans_detected']}")
+        if "boxes" in stats and isinstance(stats["boxes"], list):
+            wireframe_text.append(f"Boxes: {len(stats['boxes'])}")
+        if "process_time" in stats:
+            wireframe_text.append(f"Wireframe time: {stats['process_time']*1000:.1f} ms")
+        if "process_time_ms" in stats:
+            wireframe_text.append(f"Enhancer time: {stats['process_time_ms']:.1f} ms")
+
+        # Combine all text for overlay
+        all_text = info_text + wireframe_text
+
+        # Calculate the size of the overlay dynamically
+        line_sizes = [cv2.getTextSize(text, font, font_scale, font_thickness)[0] for text in all_text]
+        max_width = max([size[0] for size in line_sizes]) + 20
+        line_height = max([size[1] for size in line_sizes]) + 8
+        overlay_height = len(all_text) * line_height + 20
+
+        # Draw semi-transparent box
         overlay = enhanced_copy.copy()
-        line_height = int(30 * font_scale)
-        overlay_height = len(info_text) * line_height + 20
-        cv2.rectangle(overlay, (10, 10), (420, overlay_height), (0, 0, 0), -1)
+        box_x1, box_y1 = 10, 10
+        box_x2, box_y2 = box_x1 + max_width, box_y1 + overlay_height
+        cv2.rectangle(overlay, (box_x1, box_y1), (box_x2, box_y2), (0, 0, 0), -1)
         cv2.addWeighted(overlay, 0.7, enhanced_copy, 0.3, 0, enhanced_copy)
 
-        # Draw text with the sans-serif font
-        for i, text in enumerate(info_text):
-            y_pos = 30 + i * line_height
+        # Draw text inside the box
+        for i, text in enumerate(all_text):
+            y_pos = box_y1 + line_height * (i + 1)
             cv2.putText(
                 enhanced_copy,
                 text,
-                (20, y_pos),
+                (box_x1 + 8, y_pos),
                 font,
                 font_scale,
                 font_color,
@@ -302,12 +322,8 @@ class VideoEnhancer:
             )
 
         # Display processing info in console occasionally
-        if stats['frame_count'] % 10 == 0:
-            print(f"Frame {stats['frame_count']} | "
-                  f"Brightness: {stats['original_brightness']:.1f} → {stats['enhanced_brightness']:.1f} | "
-                  f"Boost: {stats['boost_factor']:.2f}x | "
-                  f"Process FPS: {stats['process_fps']:.1f} | "
-                  f"Display FPS: {stats['display_fps']:.1f}")
+        if stats.get('frame_count', 0) % 10 == 0:
+            print(" | ".join(all_text))
 
         return enhanced_copy
 
