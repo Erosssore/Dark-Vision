@@ -17,7 +17,7 @@ By decomposing an image into these frequency bands using a Laplacian pyramid, we
 Functionality:
 1. Decomposition: The input image is broken down into multiple frequency bands.
     - One low-frequency component; progressively smaller, more blurred versions of the image (Guassian pyramid)
-    - Multiple high-frequency components; differences between agjacent levels of the Guassian pyramid (Laplacian pyramid)
+    - Multiple high-frequency components; differences between adjacent levels of the Guassian pyramid (Laplacian pyramid)
 
 2. Processing: Each frequency band can be independently enhanced:
     - Low-frequency component: exposure and contrast enhancement.
@@ -194,8 +194,12 @@ class LaplacianPyramid:
                     size = (hf.shape[1], hf.shape[0])  # width, height
                     reconstructed = cv2.pyrUp(reconstructed, dstsize=size)
 
-                # Add high frequency component
-                reconstructed = cv2.add(reconstructed, hf)
+                # Convert both arrays to the same data type (float32)
+                # or specify output dtype in cv2.add
+                reconstructed = cv2.add(
+                    reconstructed.astype(np.float32),
+                    hf.astype(np.float32)
+                )
 
             reconstructed_batch.append(reconstructed)
 
