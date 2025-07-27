@@ -1,0 +1,17 @@
+Index: src/utils/video_enhancer.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/utils/video_enhancer.py b/src/utils/video_enhancer.py
+--- a/src/utils/video_enhancer.py	
++++ b/src/utils/video_enhancer.py	(date 1753578845990)
+@@ -99,7 +99,7 @@
+         dark_pixels_ratio = np.sum(hist[:50]) / np.sum(hist)  # % of very dark pixels (0-50)
+         bright_pixels_ratio = np.sum(hist[200:]) / np.sum(hist)  # % of very bright pixels (200-255)
+ 
+-        # NEW: Adaptive target brightness based on scene content
++        # Adaptive target brightness based on scene content
+         # Lower target for scenes with lots of bright areas to avoid over-brightening
+         adaptive_target = self.target_brightness
+         if bright_pixels_ratio > 0.2:  # If more than 20% of pixels are bright
